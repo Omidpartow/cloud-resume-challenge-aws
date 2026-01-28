@@ -1,14 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omid Partow - Cloud Engineer</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
-        header { text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 40px 20px; border-radius: 10px; }
-        h1 { margin: 0; font-size: 2.5em; }
-        .contact { margin-top: 10px; font-size: 1.1em; }
-        section { margin: 30px 0; padding: 20px; border-left: 4px solid #1e3c72; background: #f8f9fa; }
-        h2 { color: #1e3c72; border-bottom: 2px solid #2a5298; padding-bottom: 10px; }
-        ul { margin: 10px 0; padding }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omid Partow - Cloud Engineer</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+    header { text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 40px 20px; border-radius: 10px; }
+    h1 { margin: 0; font-size: 2.4em; }
+    .contact { margin-top: 10px; font-size: 1.05em; }
+    section { margin: 25px 0; padding: 20px; border-left: 4px solid #1e3c72; background: #f8f9fa; border-radius: 6px; }
+    h2 { color: #1e3c72; margin-top: 0; }
+    ul { margin: 10px 0 0 20px; }
+    .tag { display: inline-block; background: #e1ecf4; color: #0366d6; padding: 3px 7px; border-radius: 3px; font-size: 0.8em; margin-right: 4px; margin-top: 4px; }
+    .tags { margin-top: 8px; }
+    footer { text-align: center; margin-top: 30px; font-size: 0.85em; color: #666; }
+    #counter { font-weight: bold; color: #1e3c72; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Omid Partow</h1>
+    <div class="contact">
+      Vancouver, BC · Cloud Engineer ·
+      <a href="mailto:Partow.omid@gmail.com" style="color: #ffeb3b;">Partow.omid@gmail.com</a> ·
+      <a href="https://linkedin.com/in/omid-partow" style="color: #ffeb3b;">LinkedIn</a> ·
+      <a href="https://github.com/omidpartow" style="color: #ffeb3b;">GitHub</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>Profile</h2>
+    <p>AWS Certified Solutions Architect with 5+ years in systems administration, cloud migrations, and automation using Terraform, PowerShell, and Bash. Passionate about building secure, scalable, and observable cloud infrastructure.</p>
+    <div class="tags">
+      <span class="tag">AWS</span>
+      <span class="tag">Terraform</span>
+      <span class="tag">CloudWatch</span>
+      <span class="tag">Azure</span>
+      <span class="tag">IaC</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Highlighted Cloud Projects</h2>
+    <ul>
+      <li><strong>AWS Terraform VPC + EC2 Demo</strong> – Provisioned VPC, public subnet, and EC2 web server using Terraform modules. Repo: <a href="https://github.com/omidpartow/aws-terraform-demo">aws-terraform-demo</a>.</li>
+      <li><strong>Cloud Resume Challenge - AWS</strong> – Static resume hosted on S3 behind CloudFront, with API Gateway, Lambda, and DynamoDB visitor counter infrastructure defined as code.</li>
+      <li><strong>CloudWatch Monitoring Demo</strong> – EC2 instance with CloudWatch alarms, SNS notifications, and dashboards. Repo: <a href="https://github.com/omidpartow/aws-cloudwatch-monitoring">aws-cloudwatch-monitoring</a>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Skills</h2>
+    <ul>
+      <li><strong>Cloud:</strong> AWS (EC2, S3, VPC, IAM, RDS, CloudFront, Lambda, API Gateway, CloudWatch), Azure fundamentals.</li>
+      <li><strong>IaC & Automation:</strong> Terraform, PowerShell, Bash, basic Python.</li>
+      <li><strong>Systems:</strong> Windows Server, Active Directory, Group Policy.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Visitor Counter (API Placeholder)</h2>
+    <p>This site is wired for a serverless visitor counter via API Gateway, Lambda, and DynamoDB. Once the Lambda is deployed, the count will appear below:</p>
+    <p>Visitors: <span id="counter">loading…</span></p>
+  </section>
+
+  <footer>
+    Built for the Cloud Resume Challenge · Omid Partow · AWS & Terraform
+  </footer>
+</body>
+</html>
