@@ -11,18 +11,23 @@ provider "aws" {
   region = "us-west-2"
 }
 
-# S3 Bucket for website
-resource "aws_s3_bucket" "resume_site" {
-  bucket = "omidpartow-resume-${random_id.bucket_suffix.hex}"
-}
-
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
+# S3 bucket for static website
+resource "aws_s3_bucket" "resume_site" {
+  bucket = "omidpartow-resume-${random_id.bucket_suffix.hex}"
+
+  tags = {
+    Name  = "omidpartow-resume-site"
+    Owner = "Omid Partow"
+  }
+}
+
 resource "aws_s3_bucket_website_configuration" "resume_site" {
   bucket = aws_s3_bucket.resume_site.id
-  
+
   index_document {
     suffix = "index.html"
   }
@@ -49,32 +54,36 @@ resource "aws_s3_bucket_policy" "resume_site" {
         Principal = "*"
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.resume_site.arn}/*"
-      },
+      }
     ]
   })
 }
 
-# CloudFront Distribution
+# CloudFront origin access identity
+resource "aws_cloudfront_origin_access_identity" "resume_site" {
+  comment = "OAI for Omid Partow resume site"
+}
+
+# CloudFront distribution in front of S3
 resource "aws_cloudfront_distribution" "resume_site" {
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+
   origin {
     domain_name = aws_s3_bucket.resume_site.bucket_regional_domain_name
     origin_id   = "S3-resume-site"
-    
+
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.resume_site.cloudfront_access_identity_path
     }
   }
 
-  enabled             = true
-  is_ipv6_enabled     = true
-  default_root_object = "index.html"
-
   default_cache_behavior {
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
     target_origin_id       = "S3-resume-site"
-    compress               = true
     viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
 
     forwarded_values {
       query_string = false
@@ -93,55 +102,36 @@ resource "aws_cloudfront_distribution" "resume_site" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  tags = {
+    Name  = "omidpartow-cloud-resume"
+    Owner = "Omid Partow"
+  }
 }
 
-resource "aws_cloudfront_origin_access_identity" "resume_site" {
-  comment = "OAI for resume site"
-}
-
-# DynamoDB for visitor counter
+# API + Lambda + DynamoDB for visitor counter (skeleton only, optional to deploy)
 resource "aws_dynamodb_table" "visitor_counter" {
-  name           = "ResumeVisitorCounter"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
+  name         = "ResumeVisitorCounter"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
 
   attribute {
     name = "id"
     type = "S"
   }
-
-  ttl {
-    attribute_name = "ttl"
-    enabled        = false
-  }
-}
-
-# Lambda visitor counter
-resource "aws_lambda_function" "visitor_counter" {
-  filename      = "lambda.zip"  # You'll upload later
-  function_name = "ResumeVisitorCounter"
-  role          = aws_iam_role.lambda_exec.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.9"
-
-  environment {
-    variables = {
-      TABLE_NAME = aws_dynamodb_table.visitor_counter.name
-    }
-  }
 }
 
 resource "aws_iam_role" "lambda_exec" {
-  name = "lambda-resume-counter"
+  name = "resume-counter-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
       Effect = "Allow"
       Principal = {
         Service = "lambda.amazonaws.com"
       }
+      Action = "sts:AssumeRole"
     }]
   })
 }
@@ -151,25 +141,35 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy" "dynamodb_policy" {
-  name = "dynamodb-access"
+resource "aws_iam_role_policy" "lambda_dynamodb" {
+  name = "lambda-dynamodb-access"
   role = aws_iam_role.lambda_exec.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem"
-      ]
+      Effect   = "Allow"
+      Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"]
       Resource = aws_dynamodb_table.visitor_counter.arn
     }]
   })
 }
 
-# API Gateway
+# Placeholder Lambda (you can upload real zip later)
+resource "aws_lambda_function" "visitor_counter" {
+  filename      = "lambda.zip"
+  function_name = "ResumeVisitorCounter"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.9"
+  role          = aws_iam_role.lambda_exec.arn
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.visitor_counter.name
+    }
+  }
+}
+
 resource "aws_apigatewayv2_api" "resume_api" {
   name          = "resume-api"
   protocol_type = "HTTP"
@@ -196,8 +196,11 @@ resource "aws_lambda_permission" "api_gateway" {
   source_arn    = "${aws_apigatewayv2_api.resume_api.execution_arn}//"
 }
 
-# Outputs
-output "website_url" {
+output "website_bucket" {
+  value = aws_s3_bucket.resume_site.bucket
+}
+
+output "cloudfront_url" {
   value = aws_cloudfront_distribution.resume_site.domain_name
 }
 
